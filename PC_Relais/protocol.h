@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
 	S_PacketHeader header;
-    unsigned char *data;
+    unsigned char data[4];	// 4 MAX data length
 } S_Packet;
 
 #pragma pack()

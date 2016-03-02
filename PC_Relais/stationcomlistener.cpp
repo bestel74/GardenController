@@ -104,7 +104,6 @@ void StationComListener::checkForValidData() {
 
             // Do we receive datas ?
             if(pack->header.dataLength > 0 && _buffer.size() >= totalLength) {
-                pack->data = new unsigned char [pack->header.dataLength];
                 memcpy((char*)pack->data, _buffer.data() + sizeof(S_PacketHeader), pack->header.dataLength);
 
                 emit sig_newPacket(pack);
@@ -130,11 +129,6 @@ void StationComListener::checkForValidData() {
     }
 }
 
-unsigned char magicNumber[3];
-unsigned short dataLength;
-unsigned char packetType;
-unsigned char radioID;
-short rssi;
 
 void StationComListener::slot_readPacket(S_Packet *pack) {
     switch(pack->header.packetType) {
@@ -166,4 +160,6 @@ void StationComListener::slot_readPacket(S_Packet *pack) {
 
         default: break;
     }
+
+    delete pack;
 }

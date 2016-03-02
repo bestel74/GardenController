@@ -137,15 +137,12 @@ __interrupt void Port_1(void)
 		memcpy((char *)&pack.header.rssi, (char *)&RSSI_dBm, sizeof(pack.header.rssi));
 
 		// Def of data
-		pack.data = (unsigned char *) malloc(sizeof(unsigned char) * dataLength);
 		memcpy((char *)&pack.data, (char *)&vbat, sizeof(vbat));
 		memcpy((char *)&pack.data+sizeof(vbat), (char *)&temp, sizeof(temp));
 
 		// Send data UART
 		memcpy(UART_TX_BUFFER, (char *)&pack, sizeof(S_PacketHeader) + dataLength);
 		UART_TX_DATALENGTH = sizeof(S_PacketHeader) + dataLength;
-
-		if(pack.data) free(pack.data);
 
 		// Enable USCI_A0 TX interrupt
 		UC0IE |= UCA0TXIE;
