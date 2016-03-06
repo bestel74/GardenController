@@ -40,10 +40,10 @@ int main(void) {
 	// 1ms @ 1MHz
 	__delay_cycles(1000);
 
-	// Set GDO2 interrut (CRC OK = packet received)
-	P1IE |= GDO2;    	// P1.0 interrupt enabled
-	P1IES &= ~GDO2;		// lo/Hi int
-	P1IFG &= ~GDO2;  	// P1.0 IFG cleared
+	// Set GDO0 interrut (Packet received)
+	P2IE |= GDO0;    	// P2.6 interrupt enabled
+	P2IES |= GDO0;		// Hi/lo interrupt
+	P2IFG &= ~GDO0;  	// P2.6 IFG cleared
 
 	// Set BUTTON interrut (Force read RXBuffer)
 	P1IE |= BUTTON;     // P1.3 interrupt enabled
@@ -70,9 +70,6 @@ int main(void) {
 	// Set SPI and Radio
 	RF_init();
 
-	// 0 dBm
-	RF_change_Power(0x50);
-
 	// enable interrupt
 	__enable_interrupt();
 
@@ -89,20 +86,15 @@ __interrupt void Timer_A(void) {
 
 }
 
-/* RF RX */
-#pragma vector=PORT1_VECTOR
-__interrupt void Port_1(void)
-{
+
+// Pcket received
+#pragma vector=PORT2_VECTOR
+__interrupt void Port_2(void) {
 	char buffer[BUFFER_STD_LENGTH] = {0};
 	char length = sizeof(buffer);
 	char status[2] = {0};
-	char SUCCESS = 0;
 
 	if(RFReceivePacket(buffer, &length, status) == CRC_OK) {
-		SUCCESS = 1;
-	}
-
-	if(SUCCESS) {
 		// Read radio ID
 		unsigned char radioID;
 		memcpy((char *)&radioID, buffer, sizeof(radioID));
@@ -170,10 +162,36 @@ __interrupt void Port_1(void)
 		UC0IE |= UCA0TXIE;
 	}
 
-	TI_CC_SPIStrobe(TI_CCxxx0_SRX);		// RX mode.
+	TI_CC_SPIStrobe(TI_CCxxx0_SRX);	// RX mode.
+	P2IFG &= ~GDO0;  				// P1.0 IFG cleared
+}
 
-	P1IFG &= ~GDO2;  // P1.0 IFG cleared
-	P1IFG &= ~BUTTON;  // P1.0 IFG cleared
+/* Button has been pushed */
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+	S_Packet pack;
+
+	// Def of header
+	unsigned char packetType = E_PacketType_Empty;
+	unsigned short dataLength = packetTypeDataLength(E_PacketType_Empty);
+	unsigned char fakeRadioID = 0;
+	short fakeRssi = 0;
+	memcpy(pack.header.magicNumber, C_MAGIC_NUMBER, sizeof(pack.header.magicNumber));
+	memcpy((char *)&pack.header.radioID, (char *)&fakeRadioID, sizeof(pack.header.radioID));
+	memcpy((char *)&pack.header.packetType, (char *)&packetType, sizeof(pack.header.packetType));
+	memcpy((char *)&pack.header.dataLength, (char *)&dataLength, sizeof(pack.header.dataLength));
+	memcpy((char *)&pack.header.rssi, (char *)&fakeRssi, sizeof(pack.header.rssi));
+
+	// Send data UART
+	memcpy(UART_TX_BUFFER, (char *)&pack, (sizeof(S_PacketHeader) + dataLength));
+	UART_TX_DATALENGTH = sizeof(S_PacketHeader) + dataLength;
+
+	// Enable USCI_A0 TX interrupt
+	UC0IE |= UCA0TXIE;
+
+	TI_CC_SPIStrobe(TI_CCxxx0_SRX);	// RX mode.
+	P1IFG &= ~BUTTON;  				// P1.0 IFG cleared
 }
 
 /* UART RX */

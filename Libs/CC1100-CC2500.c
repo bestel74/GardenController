@@ -114,7 +114,7 @@ void RF_init()
 
 	TI_CC_SPIWriteBurstReg(TI_CCxxx0_PATABLE, paTable, paTableLen);//Write PATABLE
 	//TI_CC_SPIStrobe(TI_CCxxx0_SIDLE); // set IDLE
-	TI_CC_SPIWriteReg (TI_CCxxx0_PATABLE,paTable[0]); // init at max powerlevel
+	TI_CC_SPIWriteReg (TI_CCxxx0_PATABLE,paTable[4]); // init at 0 dBm
 
 	TI_CC_SPIStrobe(TI_CCxxx0_SRX);           // Initialize CCxxxx in RX mode.
                                             // When a pkt is received, it will

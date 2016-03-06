@@ -35,9 +35,6 @@ int main(void) {
 	// Set SPI and Radio
 	RF_init();
 
-	// Reduce power to 0 dBm
-	RF_change_Power(0x50);
-
 	// Radio Sleep
 	Radio_GotoSleep();
 
@@ -63,14 +60,13 @@ static volatile int timer_demult = 0;
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer_A (void)
 {
-	// "TAIV & 0x0A" => Timer_A overflow
-	if(TAIV & 0x0A) {
+	// "TAIV == 0x0A" => Timer_A overflow
+	if(TAIV == 0x0A) {
 		// TIMER_A x5
 		if(++timer_demult < 5) return;
 		timer_demult = 0;
 		LPM3_EXIT;
 
-		timer_demult = 0;
 		char txBuffer[16+1] = {0};
 
 		//[0] Packet length -- NEEDED FOR CC110L
@@ -108,19 +104,22 @@ __interrupt void Timer_A (void)
 short readInteralTemp()
 {
 	// Internal temp reading
-	ADC10CTL0 = SREF_1 + REFON + ADC10ON + ADC10SHT_0 ; //1.5V ref,Ref on,4 clocks for sample
-	ADC10CTL1 = INCH_10 + ADC10DIV_3; //temp sensor is at 10 and clock/4
+	ADC10CTL0 = SREF_1 + REFON + ADC10ON + ADC10SHT_3; //1.5V ref, Ref on, 64 clocks for sample
+	ADC10CTL1 = INCH_10 + ADC10DIV_3; //temp sensor is at 10 and clock/4, SMKCLK
     ADC10CTL0 |= ENC + ADC10SC;       //enable conversion and start conversion
 
-    while(ADC10CTL1 & BUSY);         //wait convertion
-    unsigned short t = ADC10MEM;     //store val in t
+    while(ADC10CTL1 & BUSY);         	//wait convertion
+    unsigned short raw_temp = ADC10MEM; //store val in t
 
     // Disable ADC for power saving
     ADC10CTL0 &= ~ENC;
-    ADC10CTL0 &= ~(REFON + ADC10ON);
-    ADC10CTL0 =0;
+	ADC10CTL0 &= ~(REFON + ADC10ON);
+	ADC10CTL0 =0;
 
-    return(short) ((t * 27069L - 18169625L) >> 16); //convert and pass
+    return(short) ((raw_temp - 673) * 423L) >> 10; //convert and pass
+
+    //return(short) ((raw_temp - 673) * 423L) >> 10; //convert and pass
+    //return(short) ((raw_temp * 27069L - 18169625L) >> 16); //convert and pass
 }
 
 short readVbat() {
@@ -128,7 +127,7 @@ short readVbat() {
 
 	// Internal temp reading
 	ADC10CTL0 = SREF_1 + REFON + ADC10ON + ADC10SHT_0; //1.5V ref,Ref on,4 clocks for sample
-	ADC10CTL1 = INCH_11 + ADC10DIV_3; //vcc/2 is at 10 and clock/4
+	ADC10CTL1 = INCH_11 + ADC10DIV_3; //vcc/2 is at chan 11 and clock/4
 	ADC10CTL0 |= ENC + ADC10SC;       //enable conversion and start conversion
 
 	// wait convertion
@@ -144,7 +143,7 @@ short readVbat() {
 	// check for overflow
 	if (raw_value == 0x3ff) {
 		// switch range - use 2.5V reference (Vcc >= 3V)
-		ADC10CTL0 |= SREF_1 + REF2_5V + REFON + ADC10ON + ADC10SHT_0;
+		ADC10CTL0 = SREF_1 + REF2_5V + REFON + ADC10ON + ADC10SHT_0;
 		ADC10CTL1 = INCH_11 + ADC10DIV_3;
 		ADC10CTL0 |= ENC + ADC10SC;
 

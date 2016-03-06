@@ -13,7 +13,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:Capteur}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TI MSP430 USB1/MSP430" value="C:/Users\Steven\Programmation\MSP430\Projet_potager\Capteur\Debug\Capteur.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TI MSP430 USB1_0/MSP430" value="C:/Users\Steven\Programmation\MSP430\Projet_potager\Capteur\Debug\Capteur.out"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TI MSP430 USB2_0/MSP430" value="C:/Users\Steven\Programmation\MSP430\Projet_potager\Capteur\Debug\Capteur.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TI MSP430 USB2_0/MSP430" value="C:/Users\Steven\Programmation\Projet_potager\MSP_Capteur\Debug\Capteur.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/Capteur"/>
 </listAttribute>
