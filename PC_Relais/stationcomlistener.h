@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QTimer>
 #include <QList>
-#include <QSerialPort>
-#include <QSerialPortInfo>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
