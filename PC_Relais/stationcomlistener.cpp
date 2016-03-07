@@ -15,7 +15,7 @@ StationComListener::StationComListener(QObject *parent) :
 
     connect(this, SIGNAL(sig_newPacket(S_Packet*)), this, SLOT(slot_readPacket(S_Packet*)));
 
-    connect(&_timerComPortScanner, &QTimer::timeout, this, &StationComListener::slot_scanComPort);
+    connect(&_timerComPortScanner, SIGNAL(timeout()), this, SLOT(slot_scanComPort()));
 
     _timerComPortScanner.setInterval(SCANNER_UPDATE_TIME_MS);
     _timerComPortScanner.setSingleShot(true);
@@ -38,8 +38,8 @@ void StationComListener::slot_scanComPort() {
             _serialPortInfo = serialPort;
             _serialPort.setPort(_serialPortInfo);
 
-            connect(&_serialPort, &QSerialPort::readyRead, this, &StationComListener::slot_readComPort);
-            connect(&_serialPort, &QSerialPort::readChannelFinished, this, &StationComListener::slot_comPortClosed);
+            connect(&_serialPort, SIGNAL(readyRead()), this, SLOT(slot_readComPort()));
+            connect(&_serialPort, SIGNAL(readChannelFinished()), this, SLOT(slot_comPortClosed()));
 
             if(_serialPort.open(QIODevice::ReadWrite)) {
                 qDebug(QString("Port \"%1\" is opened !").arg(
@@ -57,8 +57,8 @@ void StationComListener::slot_scanComPort() {
                            _serialPortInfo.portName(),
                            _serialPort.errorString()
                            ).toUtf8());
-                disconnect(&_serialPort, &QSerialPort::readyRead, this, &StationComListener::slot_readComPort);
-                disconnect(&_serialPort, &QSerialPort::readChannelFinished, this, &StationComListener::slot_comPortClosed);
+                disconnect(&_serialPort, SIGNAL(readyRead()), this, SLOT(slot_readComPort()));
+                disconnect(&_serialPort, SIGNAL(readChannelFinished()), this, SLOT(slot_comPortClosed()));
             }
         }
     }
@@ -86,8 +86,8 @@ void StationComListener::slot_comPortClosed() {
                ).toUtf8());
 
     _serialPort.close();
-    disconnect(&_serialPort, &QSerialPort::readyRead, this, &StationComListener::slot_readComPort);
-    disconnect(&_serialPort, &QSerialPort::readChannelFinished, this, &StationComListener::slot_comPortClosed);
+    disconnect(&_serialPort, SIGNAL(readyRead()), this, SLOT(slot_readComPort()));
+    disconnect(&_serialPort, SIGNAL(readChannelFinished()), this, SLOT(slot_comPortClosed()));
 }
 
 
