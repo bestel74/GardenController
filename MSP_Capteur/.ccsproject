@@ -5,7 +5,7 @@
 	<deviceFamily value="MSP430"/>
 	<codegenToolVersion value="4.4.5"/>
 	<isElfFormat value="true"/>
-	<connection value="common/targetdb/connections/TIMSP430-USB2.xml"/>
+	<connection value="common/targetdb/connections/TIMSP430-USB.xml"/>
 	<linkerCommandFile value="lnk_msp430g2553.cmd"/>
 	<rts value="libc.a"/>
 	<createSlaveProjects value=""/>
