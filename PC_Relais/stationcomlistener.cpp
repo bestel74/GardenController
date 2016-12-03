@@ -11,7 +11,6 @@ StationComListener::StationComListener(QObject *parent) :
     _database.setDatabaseName(MYSQL_DDBN);
     _database.setUserName(MYSQL_USER);
     _database.setPassword(MYSQL_PASS);
-    _database.open();
 
     connect(this, SIGNAL(sig_newPacket(S_Packet*)), this, SLOT(slot_readPacket(S_Packet*)));
 
@@ -138,9 +137,7 @@ void StationComListener::slot_readPacket(S_Packet *pack) {
             memcpy((char *)&vbat, pack->data, sizeof(vbat));
             memcpy((char *)&temp, pack->data + sizeof(vbat), sizeof(temp));
 
-            if(!_database.isOpen()) {
-                _database.open();
-            }
+            _database.open();
             QString query = QString("INSERT INTO status (`radioID`,`date`,`rssi`,`internalTemperature`,`vBat`) VALUES(") +
                     QString("'") + QString::number(pack->header.radioID) + QString("',") +
                     QString("NOW(),") +
@@ -149,6 +146,7 @@ void StationComListener::slot_readPacket(S_Packet *pack) {
                     QString("'") + QString::number(vbat) + QString("');");
             qDebug(QString("Query: ").toUtf8() + query.toUtf8());
             _database.exec(query);
+	    _database.close();
         }
         break;
 
